@@ -1,67 +1,109 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useUser } from "@clerk/nextjs";
+import { motion } from "framer-motion";
 
 export default function Home() {
+  const { isSignedIn, user } = useUser();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-gray-900 to-black text-white">
-      <div className="max-w-5xl w-full text-center space-y-12">
-        <div className="space-y-6">
-          <h1 className="text-6xl md:text-8xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
-            SHADOW HEIST
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300">
-            A multiplayer game of deception, strategy, and cunning heists
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-8 max-w-lg mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/create-room" className="w-full" passHref>
-              <Button 
-                className="text-xl py-6 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 transition-all duration-300 border-0 rounded-lg"
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-gray-900 to-black text-white relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/3 w-32 h-32 rounded-full bg-indigo-600/20 blur-3xl"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-40 h-40 rounded-full bg-purple-600/20 blur-3xl"></div>
+        <div className="absolute top-1/2 right-1/3 w-24 h-24 rounded-full bg-pink-600/20 blur-3xl"></div>
+      </div>
+      
+      <div className="relative z-10 max-w-3xl mx-auto text-center">
+        {isSignedIn && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-4 bg-gray-800/60 backdrop-blur-sm rounded-lg border border-indigo-500/20"
+          >
+            <p className="text-xl">
+              Welcome back, <span className="font-semibold text-indigo-400">{user?.firstName || 'Agent'}</span>!
+            </p>
+          </motion.div>
+        )}
+        
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400"
+        >
+          SHADOW HEIST
+        </motion.h1>
+        
+        <motion.p 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0, transition: { delay: 0.1 } }}
+          className="text-xl mb-12 text-gray-300"
+        >
+          A multiplayer game of deception and strategy
+        </motion.p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-xl mx-auto">
+          {isSignedIn ? (
+            <>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0, transition: { delay: 0.2 } }}
+                whileHover={{ scale: 1.03 }}
+                className="col-span-1"
               >
-                Create Room
-              </Button>
-            </Link>
-            <Link href="/join-room" className="w-full" passHref>
-              <Button 
-                className="text-xl py-6 w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:opacity-90 transition-all duration-300 border-0 rounded-lg"
+                <Link href="/create-room" className="block w-full">
+                  <Button className="w-full py-8 text-lg font-medium bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0 shadow-lg shadow-purple-700/20">
+                    CREATE ROOM
+                  </Button>
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0, transition: { delay: 0.3 } }}
+                whileHover={{ scale: 1.03 }}
+                className="col-span-1"
               >
-                Join Room
-              </Button>
-            </Link>
-          </div>
-          <Link href="/how-to-play" className="w-full" passHref>
-            <Button 
-              variant="outline" 
-              className="text-lg py-4 border-white/20 bg-black/30 hover:bg-black/50 transition-all duration-300 text-gray-300 rounded-lg w-full"
+                <Link href="/join-room" className="block w-full">
+                  <Button className="w-full py-8 text-lg font-medium bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-0 shadow-lg shadow-blue-700/20">
+                    JOIN ROOM
+                  </Button>
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
+                whileHover={{ scale: 1.03 }}
+                className="col-span-1 md:col-span-2"
+              >
+                <Link href="/how-to-play" className="block w-full">
+                  <Button variant="outline" className="w-full py-6 text-base font-medium border-white/20 bg-black/30 hover:bg-black/50 text-gray-300">
+                    HOW TO PLAY
+                  </Button>
+                </Link>
+              </motion.div>
+            </>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0, transition: { delay: 0.4 } }}
+              whileHover={{ scale: 1.03 }}
+              className="col-span-1 md:col-span-2"
             >
-              How To Play
-            </Button>
-          </Link>
+              <Link href="/how-to-play" className="block w-full">
+                <Button variant="outline" className="w-full py-6 text-base font-medium border-white/20 bg-black/30 hover:bg-black/50 text-gray-300">
+                  HOW TO PLAY
+                </Button>
+              </Link>
+            </motion.div>
+          )}
         </div>
-
-        <div className="pt-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-black/50 border border-white/10 p-6 rounded-xl hover:bg-black/70 transition-all duration-300">
-              <h3 className="text-xl font-bold mb-2 text-purple-400">Steal The Loot</h3>
-              <p className="text-gray-400">Complete tasks with your team to progress through the heist.</p>
-            </div>
-            <div className="bg-black/50 border border-white/10 p-6 rounded-xl hover:bg-black/70 transition-all duration-300">
-              <h3 className="text-xl font-bold mb-2 text-red-400">Trust No One</h3>
-              <p className="text-gray-400">Traitors lurk among you. Vote to banish the suspected saboteurs.</p>
-            </div>
-            <div className="bg-black/50 border border-white/10 p-6 rounded-xl hover:bg-black/70 transition-all duration-300">
-              <h3 className="text-xl font-bold mb-2 text-blue-400">Use Your Skills</h3>
-              <p className="text-gray-400">Each role has unique abilities. Master them to win the game.</p>
-            </div>
-          </div>
-        </div>
-
-        <footer className="text-gray-500 text-sm mt-12">
-          © 2025 Shadow Heist | The Ultimate Social Deduction Game
-        </footer>
       </div>
     </main>
   );
