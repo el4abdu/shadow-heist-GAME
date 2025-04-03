@@ -57,7 +57,7 @@ export default function JoinRoom() {
       
       console.log("Join room result:", result);
       
-      // Navigate to the room page
+      // Navigate to the room
       router.push(`/room/${roomCode}`);
     } catch (err) {
       // Clear the timeout since we got an error

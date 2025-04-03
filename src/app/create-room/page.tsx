@@ -3,14 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { createRoom } from "@/lib/firebase-services";
 import Link from "next/link";
 import Image from "next/image";
 import { toast } from "react-hot-toast";
+import { createRoom } from "@/lib/firebase-services";
 
 export default function CreateRoom() {
   const router = useRouter();
@@ -55,8 +51,8 @@ export default function CreateRoom() {
       toast.success("Room created successfully!");
       
       // Navigate to the room page
-      const { roomId, code } = result;
-      router.push(`/room/${code}`);
+      const { roomId, code: roomCode } = result;
+      router.push(`/room/${roomCode}`);
     } catch (error) {
       console.error("Error creating room:", error);
       toast.error("Failed to create room. Please try again.");
@@ -82,81 +78,82 @@ export default function CreateRoom() {
         
         <form onSubmit={handleCreateRoom} className="space-y-6 bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700">
           <div>
-            <Label htmlFor="roomName" className="text-white">Room Name</Label>
-            <Input
+            <label htmlFor="roomName" className="text-white block mb-1">Room Name</label>
+            <input
               id="roomName"
               type="text"
               value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRoomName(e.target.value)}
               placeholder="Enter room name"
-              className="mt-1 bg-gray-900/70 border-gray-700 text-white"
+              className="w-full p-2 rounded bg-gray-900/70 border border-gray-700 text-white mt-1"
               maxLength={20}
             />
           </div>
           
           <div>
             <div className="flex justify-between mb-1">
-              <Label htmlFor="traitorCount" className="text-white">Traitors</Label>
+              <label htmlFor="traitorCount" className="text-white">Traitors</label>
               <span className="text-purple-400 font-semibold">{traitorCount}</span>
             </div>
-            <Slider
+            <input
               id="traitorCount"
-              value={[traitorCount]}
+              type="range"
+              value={traitorCount}
               min={1}
               max={3}
               step={1}
-              onValueChange={(value) => setTraitorCount(value[0])}
-              className="mt-1"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTraitorCount(Number(e.target.value))}
+              className="w-full mt-1"
             />
           </div>
           
           <div>
             <div className="flex justify-between mb-1">
-              <Label htmlFor="heroCount" className="text-white">Heroes</Label>
+              <label htmlFor="heroCount" className="text-white">Heroes</label>
               <span className="text-blue-400 font-semibold">{heroCount}</span>
             </div>
-            <Slider
+            <input
               id="heroCount"
-              value={[heroCount]}
+              type="range"
+              value={heroCount}
               min={1}
               max={3}
               step={1}
-              onValueChange={(value) => setHeroCount(value[0])}
-              className="mt-1"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setHeroCount(Number(e.target.value))}
+              className="w-full mt-1"
             />
           </div>
           
           <div>
             <div className="flex justify-between mb-1">
-              <Label className="text-white">Civilians</Label>
+              <label className="text-white">Civilians</label>
               <span className="text-gray-400 font-semibold">{neutralCount}</span>
             </div>
           </div>
           
           <div>
             <div className="flex justify-between mb-1">
-              <Label className="text-white">Total Players</Label>
+              <label className="text-white">Total Players</label>
               <span className="text-green-400 font-semibold">{totalPlayerCount}</span>
             </div>
           </div>
           
           <div className="pt-2 space-y-4">
-            <Button 
+            <button 
               type="submit" 
-              className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded disabled:opacity-70"
               disabled={isCreating}
             >
               {isCreating ? "Creating Room..." : "Create Room"}
-            </Button>
+            </button>
             
             <Link href="/" className="block text-center">
-              <Button 
+              <button 
                 type="button" 
-                variant="outline" 
-                className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="w-full py-3 border border-gray-700 text-gray-300 hover:bg-gray-800 rounded"
               >
                 Back
-              </Button>
+              </button>
             </Link>
           </div>
         </form>
