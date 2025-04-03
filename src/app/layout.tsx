@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import AuthWrapper from "@/components/AuthWrapper";
 import { ClerkProvider } from "@clerk/nextjs";
 import { FirebaseProvider } from "@/components/FirebaseProvider";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || ""}>
           <FirebaseProvider>
             <AuthWrapper>{children}</AuthWrapper>
+            <Toaster position="top-center" />
           </FirebaseProvider>
         </ClerkProvider>
       </body>

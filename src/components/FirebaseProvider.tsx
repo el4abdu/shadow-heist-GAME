@@ -2,15 +2,13 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { app, db, auth, analytics } from '@/lib/firebase';
-import { User } from 'firebase/auth';
-import { Analytics } from 'firebase/analytics';
 
 interface FirebaseContextType {
   app: typeof app;
   db: typeof db;
   auth: typeof auth;
-  analytics: Analytics | null;
-  firebaseUser: User | null;
+  analytics: typeof analytics;
+  firebaseUser: any | null;
   firebaseLoaded: boolean;
 }
 
@@ -25,12 +23,12 @@ export function useFirebase() {
 }
 
 export function FirebaseProvider({ children }: { children: React.ReactNode }) {
-  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<any | null>(null);
   const [firebaseLoaded, setFirebaseLoaded] = useState(false);
   
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged((user: any) => {
       setFirebaseUser(user);
       setFirebaseLoaded(true);
     });

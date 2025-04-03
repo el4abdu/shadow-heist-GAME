@@ -24,7 +24,7 @@ const auth = getAuth(app);
 let analytics = null;
 if (typeof window !== 'undefined') {
   // Check if analytics is supported in this environment
-  isSupported().then(supported => {
+  isSupported().then((supported: boolean) => {
     if (supported) {
       analytics = getAnalytics(app);
     }

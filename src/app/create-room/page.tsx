@@ -70,7 +70,7 @@ export default function CreateRoom() {
       console.log("Room created:", response);
       const { roomId, code } = response;
       
-      // Navigate to the room page
+      // Navigate to the room page - using roomCode consistently
       router.push(`/room/${code}`);
     } catch (err) {
       // Clear the timeout since we got an error

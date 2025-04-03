@@ -14,7 +14,7 @@ export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
   const { user, isLoaded, isSignedIn } = useUser();
-  const roomCode = params.code as string;
+  const roomCode = params.roomCode as string;
   
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);

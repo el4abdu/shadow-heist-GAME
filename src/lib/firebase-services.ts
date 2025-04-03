@@ -100,8 +100,14 @@ export const createRoom = async (data: {
       createdAt: Date.now()
     };
     
+    console.log("Creating room with data:", room);
+    
     // Write room data to database
     await set(newRoomRef, room);
+    
+    // Also store a reference by room code for easier lookup
+    const roomsByCodeRef = ref(db, `roomsByCode/${roomCode}`);
+    await set(roomsByCodeRef, roomId);
     
     return { roomId, code: roomCode };
   } catch (error) {
@@ -117,25 +123,22 @@ export const joinRoom = async (data: {
 }): Promise<boolean> => {
   try {
     // Find room by code
-    const roomsRef = ref(db, 'rooms');
-    const snapshot = await get(roomsRef);
-    let roomId: string | null = null;
-    let room: Room | null = null;
+    const roomsByCodeRef = ref(db, `roomsByCode/${data.code}`);
+    const roomIdSnapshot = await get(roomsByCodeRef);
     
-    if (snapshot.exists()) {
-      const rooms = snapshot.val();
-      for (const id in rooms) {
-        if (rooms[id].code === data.code) {
-          roomId = id;
-          room = rooms[id];
-          break;
-        }
-      }
-    }
-    
-    if (!roomId || !room) {
+    if (!roomIdSnapshot.exists()) {
       throw new Error("Room not found");
     }
+    
+    const roomId = roomIdSnapshot.val();
+    const roomRef = ref(db, `rooms/${roomId}`);
+    const roomSnapshot = await get(roomRef);
+    
+    if (!roomSnapshot.exists()) {
+      throw new Error("Room not found");
+    }
+    
+    const room = roomSnapshot.val() as Room;
     
     // Check if player is already in the room
     const existingPlayer = room.players.find(p => p.id === data.userId);
@@ -172,11 +175,10 @@ export const joinRoom = async (data: {
       isAlive: true
     };
     
-    room.players.push(newPlayer);
+    const players = [...room.players, newPlayer];
     
     // Update the room in the database
-    const roomRef = ref(db, `rooms/${roomId}`);
-    await update(roomRef, { players: room.players });
+    await update(roomRef, { players });
     
     return true;
   } catch (error) {
@@ -185,24 +187,66 @@ export const joinRoom = async (data: {
   }
 };
 
+// Find room by code
+export const findRoomByCode = async (code: string): Promise<Room | null> => {
+  try {
+    // First look up the roomId from the code
+    const roomsByCodeRef = ref(db, `roomsByCode/${code}`);
+    const roomIdSnapshot = await get(roomsByCodeRef);
+    
+    if (!roomIdSnapshot.exists()) {
+      return null;
+    }
+    
+    const roomId = roomIdSnapshot.val();
+    const roomRef = ref(db, `rooms/${roomId}`);
+    const roomSnapshot = await get(roomRef);
+    
+    if (!roomSnapshot.exists()) {
+      return null;
+    }
+    
+    const room = roomSnapshot.val() as Room;
+    return room;
+  } catch (error) {
+    console.error("Error finding room:", error);
+    return null;
+  }
+};
+
 // Subscribe to room changes
 export const subscribeToRoom = (roomCode: string, callback: (room: Room) => void) => {
-  const roomsRef = ref(db, 'rooms');
+  // First, get the roomId from the code
+  const roomsByCodeRef = ref(db, `roomsByCode/${roomCode}`);
   
-  const listener = onValue(roomsRef, (snapshot) => {
-    if (snapshot.exists()) {
-      const rooms = snapshot.val();
-      for (const id in rooms) {
-        if (rooms[id].code === roomCode) {
-          callback(rooms[id]);
-          break;
-        }
-      }
+  // One-time listener to get the roomId
+  get(roomsByCodeRef).then((snapshot) => {
+    if (!snapshot.exists()) {
+      console.error(`Room with code ${roomCode} not found`);
+      return;
     }
+    
+    const roomId = snapshot.val();
+    const roomRef = ref(db, `rooms/${roomId}`);
+    
+    // Subscribe to room changes
+    const roomListener = onValue(roomRef, (roomSnapshot) => {
+      if (roomSnapshot.exists()) {
+        const room = roomSnapshot.val() as Room;
+        callback(room);
+      } else {
+        console.error(`Room with ID ${roomId} no longer exists`);
+      }
+    });
+    
+    // Return unsubscribe function
+    return () => off(roomRef, 'value', roomListener);
+  }).catch(error => {
+    console.error("Error setting up room subscription:", error);
   });
   
-  // Return unsubscribe function
-  return () => off(roomsRef, 'value', listener);
+  // Return a dummy unsubscribe function
+  return () => {};
 };
 
 // Chat Services
@@ -286,6 +330,35 @@ export const startGame = async (roomId: string) => {
     return true;
   } catch (error) {
     console.error("Error starting game:", error);
+    throw error;
+  }
+};
+
+// Player Actions
+export const toggleReady = async (roomId: string, playerId: string) => {
+  try {
+    const roomRef = ref(db, `rooms/${roomId}`);
+    const snapshot = await get(roomRef);
+    
+    if (!snapshot.exists()) {
+      throw new Error("Room not found");
+    }
+    
+    const room = snapshot.val() as Room;
+    const players = [...room.players];
+    const playerIndex = players.findIndex(p => p.id === playerId);
+    
+    if (playerIndex === -1) {
+      throw new Error("Player not found in room");
+    }
+    
+    // Toggle ready status
+    players[playerIndex].isReady = !players[playerIndex].isReady;
+    
+    await update(roomRef, { players });
+    return players[playerIndex].isReady;
+  } catch (error) {
+    console.error("Error toggling ready status:", error);
     throw error;
   }
 };
