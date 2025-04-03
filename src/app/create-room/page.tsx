@@ -1,201 +1,166 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { createRoom } from "@/lib/firebase-services";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { useUser } from "@clerk/nextjs";
-import AvatarSelector from "@/components/AvatarSelector";
-import { createRoom } from "@/lib/firebase-services";
-import { getUserDisplayName } from "@/lib/utils";
+import { toast } from "react-hot-toast";
 
 export default function CreateRoom() {
   const router = useRouter();
+  const { user, isSignedIn, isLoaded } = useUser();
+  
   const [roomName, setRoomName] = useState("");
   const [traitorCount, setTraitorCount] = useState(2);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(undefined);
-  const { user } = useUser();
-
+  const [heroCount, setHeroCount] = useState(2);
+  const [isCreating, setIsCreating] = useState(false);
+  const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(1); // Default avatar
+  
+  const totalPlayerCount = traitorCount + heroCount + 2; // 2 civilians by default
+  
+  // Calculate the neutral count (civilians)
+  const neutralCount = Math.max(0, totalPlayerCount - traitorCount - heroCount);
+  
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Create room button clicked");
     
-    if (!roomName) {
-      setError("Please enter a room name");
+    if (!isSignedIn || !user) {
+      toast.error("You must be signed in to create a room");
       return;
     }
-
-    if (!user) {
-      setError("You must be logged in to create a room");
+    
+    if (!roomName.trim()) {
+      toast.error("Please enter a room name");
       return;
     }
-
-    setIsLoading(true);
-    setError("");
-
-    // Set a timeout to prevent the button from being stuck in loading state
-    const timeoutId = setTimeout(() => {
-      console.log("Create room timeout reached");
-      setError("Request is taking too long. Please try again.");
-      setIsLoading(false);
-    }, 10000); // 10 second timeout
-
+    
+    setIsCreating(true);
+    
     try {
-      // Calculate hero count based on traitor count
-      const heroCount = 6 - traitorCount - 2; // 2 civilians
-      
-      console.log("Creating room with:", { 
-        name: roomName, 
+      // Use the Firebase service to create a room
+      const result = await createRoom({
+        name: roomName.trim(),
         hostId: user.id,
-        traitorCount,
+        traitorCount, 
         heroCount,
-        avatarId: selectedAvatarId 
+        avatarId: selectedAvatarId,
       });
       
-      // Call Firebase function to create a room
-      const response = await createRoom({
-        name: roomName,
-        hostId: user.id,
-        traitorCount,
-        heroCount,
-        avatarId: selectedAvatarId
-      });
+      toast.success("Room created successfully!");
       
-      // Clear the timeout since we got a response
-      clearTimeout(timeoutId);
-      
-      console.log("Room created:", response);
-      const { roomId, code } = response;
-      
-      // Navigate to the room page - using roomCode consistently
+      // Navigate to the room page
+      const { roomId, code } = result;
       router.push(`/room/${code}`);
-    } catch (err) {
-      // Clear the timeout since we got an error
-      clearTimeout(timeoutId);
-      console.error("Failed to create room:", err);
-      setError("Failed to create room. Please try again.");
-      setIsLoading(false);
+    } catch (error) {
+      console.error("Error creating room:", error);
+      toast.error("Failed to create room. Please try again.");
+    } finally {
+      setIsCreating(false);
     }
   };
-
+  
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
-      <div className="max-w-md mx-auto pt-12">
-        <div className="flex justify-center mb-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
           <Image 
             src="/Assets/logo.png" 
-            alt="Shadow Heist Logo" 
+            alt="Shadow Heist" 
             width={120} 
-            height={120}
-            className="drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+            height={120} 
+            className="mx-auto mb-4 drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]" 
           />
+          <h1 className="text-3xl font-bold text-white">Create Room</h1>
+          <p className="text-gray-400 mt-2">Set up your game and invite friends</p>
         </div>
-        <h1 className="text-4xl font-bold mb-8 text-center">Create a Room</h1>
         
-        <form onSubmit={handleCreateRoom} className="space-y-6">
+        <form onSubmit={handleCreateRoom} className="space-y-6 bg-gray-800/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700">
           <div>
-            <label htmlFor="roomName" className="block text-sm font-medium mb-2">
-              Room Name
-            </label>
-            <input
+            <Label htmlFor="roomName" className="text-white">Room Name</Label>
+            <Input
               id="roomName"
               type="text"
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
-              placeholder="Enter a name for your room"
-              className="w-full px-3 py-2 bg-gray-800 rounded border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              required
+              placeholder="Enter room name"
+              className="mt-1 bg-gray-900/70 border-gray-700 text-white"
+              maxLength={20}
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Select Your Avatar
-            </label>
-            <div className="flex justify-center mb-4">
-              <AvatarSelector 
-                onSelect={(avatarId) => setSelectedAvatarId(avatarId)} 
-                initialAvatarId={selectedAvatarId}
-              />
-            </div>
-            <p className="text-xs text-center text-gray-400">Click to select or change your avatar</p>
-          </div>
           
           <div>
-            <label htmlFor="traitorCount" className="block text-sm font-medium mb-2">
-              Number of Traitors
-            </label>
-            <div className="flex items-center gap-4">
-              <input
-                id="traitorCount"
-                type="range"
-                min="1"
-                max="3"
-                value={traitorCount}
-                onChange={(e) => setTraitorCount(parseInt(e.target.value))}
-                className="flex-1"
-              />
-              <span className="w-8 text-center font-semibold">{traitorCount}</span>
+            <div className="flex justify-between mb-1">
+              <Label htmlFor="traitorCount" className="text-white">Traitors</Label>
+              <span className="text-purple-400 font-semibold">{traitorCount}</span>
             </div>
-            <div className="flex justify-between text-xs text-gray-400 mt-2">
-              <span>1</span>
-              <span>2</span>
-              <span>3</span>
+            <Slider
+              id="traitorCount"
+              value={[traitorCount]}
+              min={1}
+              max={3}
+              step={1}
+              onValueChange={(value) => setTraitorCount(value[0])}
+              className="mt-1"
+            />
+          </div>
+          
+          <div>
+            <div className="flex justify-between mb-1">
+              <Label htmlFor="heroCount" className="text-white">Heroes</Label>
+              <span className="text-blue-400 font-semibold">{heroCount}</span>
+            </div>
+            <Slider
+              id="heroCount"
+              value={[heroCount]}
+              min={1}
+              max={3}
+              step={1}
+              onValueChange={(value) => setHeroCount(value[0])}
+              className="mt-1"
+            />
+          </div>
+          
+          <div>
+            <div className="flex justify-between mb-1">
+              <Label className="text-white">Civilians</Label>
+              <span className="text-gray-400 font-semibold">{neutralCount}</span>
             </div>
           </div>
           
-          <div className="pt-4">
-            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
-              <div className="bg-gray-800 rounded p-2">
-                <div className="font-medium text-blue-400">Heroes</div>
-                <div>{6 - traitorCount - 2}</div>
-              </div>
-              <div className="bg-gray-800 rounded p-2">
-                <div className="font-medium text-red-400">Traitors</div>
-                <div>{traitorCount}</div>
-              </div>
-              <div className="bg-gray-800 rounded p-2">
-                <div className="font-medium text-gray-400">Civilians</div>
-                <div>2</div>
-              </div>
-              <div className="bg-gray-800 rounded p-2">
-                <div className="font-medium text-purple-400">Total</div>
-                <div>6</div>
-              </div>
+          <div>
+            <div className="flex justify-between mb-1">
+              <Label className="text-white">Total Players</Label>
+              <span className="text-green-400 font-semibold">{totalPlayerCount}</span>
             </div>
           </div>
           
-          {error && (
-            <div className="p-3 bg-red-900/50 border border-red-900 rounded text-sm text-red-200">
-              {error}
-            </div>
-          )}
-          
-          <Button
-            type="submit"
-            className="w-full py-6 bg-blue-600 hover:bg-blue-700 transition-all duration-200 active:scale-95 focus:ring-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-            disabled={isLoading}
-            onClick={(e) => {
-              console.log("Create room button direct click");
-              if (e.currentTarget.form && !e.currentTarget.form.reportValidity()) {
-                return; // Let the browser handle form validation
-              }
-              handleCreateRoom(e as unknown as React.FormEvent);
-            }}
-          >
-            {isLoading ? "Creating Room..." : "Create Room"}
-          </Button>
-          
-          <div className="text-center">
-            <Link href="/" className="text-sm text-blue-400 hover:underline">
-              Back to Home
+          <div className="pt-2 space-y-4">
+            <Button 
+              type="submit" 
+              className="w-full py-6 bg-purple-600 hover:bg-purple-700 text-white"
+              disabled={isCreating}
+            >
+              {isCreating ? "Creating Room..." : "Create Room"}
+            </Button>
+            
+            <Link href="/" className="block text-center">
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="w-full border-gray-700 text-gray-300 hover:bg-gray-800"
+              >
+                Back
+              </Button>
             </Link>
           </div>
         </form>
       </div>
-    </main>
+    </div>
   );
 } 
