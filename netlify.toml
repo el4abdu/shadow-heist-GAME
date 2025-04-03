@@ -6,6 +6,7 @@
   package = "@netlify/plugin-nextjs"
 
 [build.environment]
+  NEXT_PUBLIC_CONVEX_URL = "https://reserved-sailfish-472.convex.cloud"
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_Z2VuZXJvdXMtcXVhZ2dhLTI4LmNsZXJrLmFjY291bnRzLmRldiQ"
 
 [[redirects]]
