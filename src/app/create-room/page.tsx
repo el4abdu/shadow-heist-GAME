@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { safeApi } from "@/lib/safeApi";
 import { useUser } from "@clerk/nextjs";
 import AvatarSelector from "@/components/AvatarSelector";
 
@@ -18,10 +19,11 @@ export default function CreateRoom() {
   const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(undefined);
   const { user } = useUser();
 
-  const createRoom = useMutation(api.rooms.createRoom);
+  const createRoom = useMutation(safeApi(api).rooms.createRoom);
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Create room button clicked");
     
     if (!roomName) {
       setError("Please enter a room name");
@@ -40,14 +42,25 @@ export default function CreateRoom() {
       // Calculate hero count based on traitor count
       const heroCount = 6 - traitorCount - 2; // 2 civilians
       
+      console.log("Creating room with:", { 
+        name: roomName, 
+        hostId: user.id,
+        traitorCount,
+        heroCount,
+        avatarId: selectedAvatarId 
+      });
+      
       // Call the Convex function to create a room
-      const { roomId, code } = await createRoom({
+      const response = await createRoom({
         name: roomName,
         hostId: user.id,
         traitorCount,
         heroCount,
         avatarId: selectedAvatarId
       });
+      
+      console.log("Room created:", response);
+      const { roomId, code } = response;
       
       // Navigate to the room page
       router.push(`/room/${code}`);
@@ -144,7 +157,7 @@ export default function CreateRoom() {
           
           <Button
             type="submit"
-            className="w-full py-6 bg-blue-600 hover:bg-blue-700"
+            className="w-full py-6 bg-blue-600 hover:bg-blue-700 transition-all duration-200 active:scale-95 focus:ring-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
             disabled={isLoading}
           >
             {isLoading ? "Creating Room..." : "Create Room"}

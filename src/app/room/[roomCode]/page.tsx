@@ -8,6 +8,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { RoomModel, PlayerModel } from "@/lib/types";
+import { safeApi } from "@/lib/safeApi";
 
 type Player = {
   id: string;
@@ -24,16 +25,16 @@ export default function RoomPage() {
   const { user } = useUser();
   
   // Get room data
-  const room = useQuery(api.rooms.getRoomByCode, { code: roomCode });
+  const room = useQuery(safeApi(api).rooms.getRoomByCode, { code: roomCode });
   
   // Get players in room
-  const playersInRoom = useQuery(api.rooms.getPlayersInRoom, 
-    room ? { roomId: room._id } : 'skip'
+  const playersInRoom = useQuery(safeApi(api).rooms.getPlayersInRoom, 
+    room ? { roomId: room?._id } : 'skip'
   ) || [];
   
   // Mutations
-  const setPlayerReady = useMutation(api.rooms.setPlayerReady);
-  const startGame = useMutation(api.rooms.startGame);
+  const setPlayerReady = useMutation(safeApi(api).rooms.setPlayerReady);
+  const startGame = useMutation(safeApi(api).rooms.startGame);
   
   const [message, setMessage] = useState("");
   const [chat, setChat] = useState<{ sender: string; text: string; timestamp: number }[]>([

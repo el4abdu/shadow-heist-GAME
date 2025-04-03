@@ -29,6 +29,7 @@ export default defineSchema({
     isHost: v.boolean(),
     alignment: v.optional(v.string()), // "hero", "traitor", "neutral"
     isAlive: v.boolean(),
+    avatarId: v.optional(v.number()),
   })
   .index("by_room", ["roomId"])
   .index("by_user_and_room", ["userId", "roomId"]),

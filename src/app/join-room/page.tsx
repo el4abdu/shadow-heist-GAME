@@ -8,6 +8,7 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import AvatarSelector from "@/components/AvatarSelector";
+import { safeApi } from "@/lib/safeApi";
 
 export default function JoinRoom() {
   const router = useRouter();
@@ -17,10 +18,11 @@ export default function JoinRoom() {
   const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(undefined);
   const { user } = useUser();
   
-  const joinRoom = useMutation(api.rooms.joinRoom);
+  const joinRoom = useMutation(safeApi(api).rooms.joinRoom);
 
   const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Join room button clicked");
     
     if (!roomCode) {
       setError("Please enter a room code");
@@ -36,12 +38,16 @@ export default function JoinRoom() {
     setError("");
 
     try {
+      console.log("Joining room with code:", roomCode, "user:", user.id, "avatar:", selectedAvatarId);
+      
       // Call the Convex mutation to join the room
       const result = await joinRoom({
         code: roomCode,
         userId: user.id,
         avatarId: selectedAvatarId
       });
+      
+      console.log("Join room result:", result);
       
       // Navigate to the room page
       router.push(`/room/${roomCode}`);
@@ -50,6 +56,11 @@ export default function JoinRoom() {
       setError("Failed to join room. Check your room code and try again.");
       setIsLoading(false);
     }
+  };
+
+  // Add this function to debug click handling
+  const debugClick = () => {
+    console.log("Button direct click activated");
   };
 
   return (
@@ -97,8 +108,15 @@ export default function JoinRoom() {
           
           <Button
             type="submit"
-            className="w-full py-6 bg-blue-600 hover:bg-blue-700"
+            className="w-full py-6 bg-blue-600 hover:bg-blue-700 transition-all duration-200 active:scale-95 focus:ring-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
             disabled={isLoading}
+            onClick={(e) => {
+              debugClick();
+              if (e.currentTarget.form && !e.currentTarget.form.reportValidity()) {
+                return; // Let the browser handle form validation
+              }
+              handleJoinRoom(e as unknown as React.FormEvent);
+            }}
           >
             {isLoading ? "Joining Room..." : "Join Room"}
           </Button>

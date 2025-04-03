@@ -12,6 +12,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { GamePhase, PlayerUI, RoleInfo, PlayerModel, RoomModel } from "@/lib/types";
+import { safeApi } from "@/lib/safeApi";
 
 const roleInfoMap: Record<string, RoleInfo> = {
   masterThief: {
@@ -53,10 +54,10 @@ export default function GamePage() {
   const { user } = useUser();
   
   // Get room data
-  const room = useQuery(api.rooms.getRoomByCode, { code: roomCode });
+  const room = useQuery(safeApi(api).rooms.getRoomByCode, { code: roomCode });
   
   // Get players in the game
-  const playersInRoom = useQuery(api.rooms.getPlayersInRoom, 
+  const playersInRoom = useQuery(safeApi(api).rooms.getPlayersInRoom, 
     room ? { roomId: room?._id } : 'skip'
   ) || [];
   
