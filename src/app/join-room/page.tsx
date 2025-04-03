@@ -37,6 +37,13 @@ export default function JoinRoom() {
     setIsLoading(true);
     setError("");
 
+    // Set a timeout to prevent the button from being stuck in loading state
+    const timeoutId = setTimeout(() => {
+      console.log("Join room timeout reached");
+      setError("Request is taking too long. Please try again.");
+      setIsLoading(false);
+    }, 10000); // 10 second timeout
+
     try {
       console.log("Joining room with code:", roomCode, "user:", user.id, "avatar:", selectedAvatarId);
       
@@ -47,11 +54,16 @@ export default function JoinRoom() {
         avatarId: selectedAvatarId
       });
       
+      // Clear the timeout since we got a response
+      clearTimeout(timeoutId);
+      
       console.log("Join room result:", result);
       
       // Navigate to the room page
       router.push(`/room/${roomCode}`);
     } catch (err) {
+      // Clear the timeout since we got an error
+      clearTimeout(timeoutId);
       console.error("Failed to join room:", err);
       setError("Failed to join room. Check your room code and try again.");
       setIsLoading(false);

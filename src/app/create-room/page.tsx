@@ -38,6 +38,13 @@ export default function CreateRoom() {
     setIsLoading(true);
     setError("");
 
+    // Set a timeout to prevent the button from being stuck in loading state
+    const timeoutId = setTimeout(() => {
+      console.log("Create room timeout reached");
+      setError("Request is taking too long. Please try again.");
+      setIsLoading(false);
+    }, 10000); // 10 second timeout
+
     try {
       // Calculate hero count based on traitor count
       const heroCount = 6 - traitorCount - 2; // 2 civilians
@@ -59,12 +66,17 @@ export default function CreateRoom() {
         avatarId: selectedAvatarId
       });
       
+      // Clear the timeout since we got a response
+      clearTimeout(timeoutId);
+      
       console.log("Room created:", response);
       const { roomId, code } = response;
       
       // Navigate to the room page
       router.push(`/room/${code}`);
     } catch (err) {
+      // Clear the timeout since we got an error
+      clearTimeout(timeoutId);
       console.error("Failed to create room:", err);
       setError("Failed to create room. Please try again.");
       setIsLoading(false);
@@ -159,6 +171,13 @@ export default function CreateRoom() {
             type="submit"
             className="w-full py-6 bg-blue-600 hover:bg-blue-700 transition-all duration-200 active:scale-95 focus:ring-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
             disabled={isLoading}
+            onClick={(e) => {
+              console.log("Create room button direct click");
+              if (e.currentTarget.form && !e.currentTarget.form.reportValidity()) {
+                return; // Let the browser handle form validation
+              }
+              handleCreateRoom(e as unknown as React.FormEvent);
+            }}
           >
             {isLoading ? "Creating Room..." : "Create Room"}
           </Button>

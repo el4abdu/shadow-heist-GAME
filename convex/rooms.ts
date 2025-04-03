@@ -21,37 +21,47 @@ export const createRoom = mutation({
     avatarId: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Generate a unique room code
-    let code = generateRoomCode();
+    console.log("Create room called with:", args);
     
-    // For demo purposes, we'll use a simple code without checking uniqueness
-    // In a real implementation, you would use withIndex once the schema is properly setup
-    
-    // Create the room
-    const roomId = await ctx.db.insert("rooms", {
-      name: args.name,
-      hostId: args.hostId,
-      code,
-      status: "lobby",
-      traitorCount: args.traitorCount,
-      heroCount: args.heroCount,
-      createdAt: Date.now(),
-    });
-    
-    // Assign a random avatar if none selected
-    const avatarId = args.avatarId ?? Math.floor(Math.random() * 18) + 1;
-    
-    // Add the host as a player
-    await ctx.db.insert("players", {
-      userId: args.hostId,
-      roomId,
-      ready: false,
-      isHost: true,
-      isAlive: true,
-      avatarId,
-    });
-    
-    return { roomId, code };
+    try {
+      // Generate a unique room code
+      let code = generateRoomCode();
+      console.log("Generated room code:", code);
+      
+      // Create the room
+      const roomId = await ctx.db.insert("rooms", {
+        name: args.name,
+        hostId: args.hostId,
+        code,
+        status: "lobby",
+        traitorCount: args.traitorCount,
+        heroCount: args.heroCount,
+        createdAt: Date.now(),
+      });
+      
+      console.log("Created room with ID:", roomId);
+      
+      // Assign a random avatar if none selected
+      const avatarId = args.avatarId ?? Math.floor(Math.random() * 18) + 1;
+      console.log("Using avatar ID:", avatarId);
+      
+      // Add the host as a player
+      const playerId = await ctx.db.insert("players", {
+        userId: args.hostId,
+        roomId,
+        ready: false,
+        isHost: true,
+        isAlive: true,
+        avatarId,
+      });
+      
+      console.log("Added host as player with ID:", playerId);
+      
+      return { roomId, code, playerId };
+    } catch (err) {
+      console.error("Error in createRoom:", err);
+      throw err;
+    }
   },
 });
 
