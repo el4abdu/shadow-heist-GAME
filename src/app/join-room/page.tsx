@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import AvatarSelector from "@/components/AvatarSelector";
-import { safeApi } from "@/lib/safeApi";
+import { joinRoom } from "@/lib/firebase-services";
+import { getUserDisplayName } from "@/lib/utils";
 
 export default function JoinRoom() {
   const router = useRouter();
@@ -17,8 +17,6 @@ export default function JoinRoom() {
   const [error, setError] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(undefined);
   const { user } = useUser();
-  
-  const joinRoom = useMutation(safeApi(api).rooms.joinRoom);
 
   const handleJoinRoom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +45,7 @@ export default function JoinRoom() {
     try {
       console.log("Joining room with code:", roomCode, "user:", user.id, "avatar:", selectedAvatarId);
       
-      // Call the Convex mutation to join the room
+      // Call the Firebase function to join the room
       const result = await joinRoom({
         code: roomCode,
         userId: user.id,
@@ -78,6 +76,15 @@ export default function JoinRoom() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
       <div className="max-w-md mx-auto pt-12">
+        <div className="flex justify-center mb-6">
+          <Image 
+            src="/Assets/logo.png" 
+            alt="Shadow Heist Logo" 
+            width={120} 
+            height={120}
+            className="drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+          />
+        </div>
         <h1 className="text-4xl font-bold mb-8 text-center">Join a Room</h1>
         
         <form onSubmit={handleJoinRoom} className="space-y-6">

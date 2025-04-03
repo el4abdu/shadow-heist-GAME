@@ -1,12 +1,22 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function HowToPlay() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-8 pb-16">
-        <div className="text-center space-y-4 mb-12">
+        <div className="text-center space-y-4 mb-8">
+          <div className="flex justify-center mb-4">
+            <Image 
+              src="/Assets/logo.png" 
+              alt="Shadow Heist Logo" 
+              width={120} 
+              height={120}
+              className="drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+            />
+          </div>
           <h1 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-cyan-500 to-blue-500">
             HOW TO PLAY
           </h1>

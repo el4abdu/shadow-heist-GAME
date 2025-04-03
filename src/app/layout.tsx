@@ -1,9 +1,9 @@
+import "../globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import AuthWrapper from "@/components/AuthWrapper";
+import { ClerkProvider } from "@clerk/nextjs";
+import { FirebaseProvider } from "@/components/FirebaseProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,16 +18,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "pk_test_Z2VuZXJvdXMtcXVhZ2dhLTI4LmNsZXJrLmFjY291bnRzLmRldiQ"}>
-      <ConvexClientProvider>
-        <html lang="en">
-          <body className={inter.className}>
-            <AuthWrapper>
-              {children}
-            </AuthWrapper>
-          </body>
-        </html>
-      </ConvexClientProvider>
-    </ClerkProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || ""}>
+          <FirebaseProvider>
+            <AuthWrapper>{children}</AuthWrapper>
+          </FirebaseProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }

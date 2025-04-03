@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
@@ -19,6 +20,22 @@ export default function Home() {
       </div>
       
       <div className="relative z-10 max-w-3xl mx-auto text-center">
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-center mb-8"
+        >
+          <Image 
+            src="/Assets/logo.png" 
+            alt="Shadow Heist Logo" 
+            width={180} 
+            height={180}
+            className="drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+          />
+        </motion.div>
+        
         {isSignedIn && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
@@ -104,7 +121,7 @@ export default function Home() {
             </motion.div>
           )}
         </div>
-      </div>
+    </div>
     </main>
   );
 }

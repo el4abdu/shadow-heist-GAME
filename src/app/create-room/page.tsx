@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { safeApi } from "@/lib/safeApi";
 import { useUser } from "@clerk/nextjs";
 import AvatarSelector from "@/components/AvatarSelector";
+import { createRoom } from "@/lib/firebase-services";
+import { getUserDisplayName } from "@/lib/utils";
 
 export default function CreateRoom() {
   const router = useRouter();
@@ -18,8 +18,6 @@ export default function CreateRoom() {
   const [error, setError] = useState("");
   const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(undefined);
   const { user } = useUser();
-
-  const createRoom = useMutation(safeApi(api).rooms.createRoom);
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,7 +55,7 @@ export default function CreateRoom() {
         avatarId: selectedAvatarId 
       });
       
-      // Call the Convex function to create a room
+      // Call Firebase function to create a room
       const response = await createRoom({
         name: roomName,
         hostId: user.id,
@@ -86,6 +84,15 @@ export default function CreateRoom() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
       <div className="max-w-md mx-auto pt-12">
+        <div className="flex justify-center mb-6">
+          <Image 
+            src="/Assets/logo.png" 
+            alt="Shadow Heist Logo" 
+            width={120} 
+            height={120}
+            className="drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+          />
+        </div>
         <h1 className="text-4xl font-bold mb-8 text-center">Create a Room</h1>
         
         <form onSubmit={handleCreateRoom} className="space-y-6">

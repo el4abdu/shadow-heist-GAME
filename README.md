@@ -4,7 +4,7 @@ A modern multiplayer social deduction game with real-time gameplay. Players take
 
 ## 🌟 Features
 
-- **Real-time Multiplayer**: Powered by Convex for seamless multiplayer experience
+- **Real-time Multiplayer**: Powered by Firebase for seamless multiplayer experience
 - **User Authentication**: Secure login with Clerk
 - **Dynamic Game Phases**:
   - 🌙 **Night Phase**: Use special abilities secretly
@@ -34,6 +34,7 @@ A modern multiplayer social deduction game with real-time gameplay. Players take
 
 - Node.js 18+ installed
 - npm or yarn
+- A Firebase account
 
 ### Installation
 
@@ -48,26 +49,46 @@ cd shadow-heist
 npm install
 ```
 
-3. Set up environment variables
-Create a `.env.local` file in the root directory:
+3. Create a Firebase project:
+   - Go to the [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project
+   - Set up the Realtime Database
+   - Set up Authentication with Email/Password (and other providers if desired)
+   - Get your Firebase configuration from Project Settings
+
+4. Create a Clerk project:
+   - Go to [Clerk Dashboard](https://dashboard.clerk.dev/)
+   - Create a new application
+   - Configure your authentication settings
+   - Get your API keys
+
+5. Create an `.env.local` file in the root directory with the following variables:
 ```
-NEXT_PUBLIC_CONVEX_URL=your_convex_url
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
+CLERK_SECRET_KEY=your_secret_key
+
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=your_database_url
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
-4. Run the development server
+6. Run the development server
 ```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
+7. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ## 🏗️ Technologies Used
 
-- **Next.js 14**: React framework with App Router
+- **Next.js 15**: React framework with App Router
 - **TypeScript**: For type safety and better developer experience
 - **Tailwind CSS**: Utility-first CSS framework for styling
-- **Convex**: Real-time backend for multiplayer functionality
+- **Firebase**: Real-time backend for multiplayer functionality
 - **Clerk**: Authentication and user management
 - **Netlify**: For deployment and hosting
 
@@ -87,9 +108,9 @@ npm run dev
 
 ## 🔧 Development
 
-### Convex Schema
+### Firebase Schema
 
-The game uses Convex for its database and real-time functionality. The main data tables are:
+The game uses Firebase for its database and real-time functionality. The main data tables are:
 
 - **users**: Player accounts
 - **rooms**: Game rooms
@@ -132,24 +153,14 @@ Made with ❤️ by [Your Name]
 
 ## 🌟 Online Multiplayer Setup Guide
 
-Shadow Heist uses Convex for real-time multiplayer functionality, allowing you to play with friends online. Here's how to set up and deploy your own instance:
+Shadow Heist uses Firebase for real-time multiplayer functionality, allowing you to play with friends online. Here's how to set up and deploy your own instance:
 
-### 1. Setup Convex Backend
+### 1. Setup Firebase Realtime Database
 
-1. Create a free account at [Convex](https://www.convex.dev/)
-2. Install the Convex CLI:
-   ```
-   npm install -g convex
-   ```
-3. Initialize your Convex project:
-   ```
-   npx convex init
-   ```
-4. Deploy your Convex backend:
-   ```
-   npx convex push
-   ```
-5. Copy your Convex deployment URL from the console or dashboard
+1. Create a free account at [Firebase](https://firebase.google.com/)
+2. Create a new project
+3. Set up the Realtime Database
+4. Get your Firebase configuration from Project Settings
 
 ### 2. Setup Authentication with Clerk
 
@@ -164,9 +175,16 @@ Shadow Heist uses Convex for real-time multiplayer functionality, allowing you t
 
 Create a `.env.local` file in the project root:
 ```
-NEXT_PUBLIC_CONVEX_URL=your_convex_url
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_key
-CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
+CLERK_SECRET_KEY=your_secret_key
+
+NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=your_database_url
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ```
 
 ### 4. Deploy to Netlify

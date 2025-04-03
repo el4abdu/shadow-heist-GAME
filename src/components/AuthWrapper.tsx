@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser, useAuth, useClerk } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -96,6 +97,20 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-900 to-black p-4">
           <div className="max-w-md w-full bg-gray-800/50 backdrop-blur-sm border border-gray-700 p-8 rounded-xl shadow-2xl">
             <div className="text-center mb-6">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="flex justify-center mb-6"
+              >
+                <Image 
+                  src="/Assets/logo.png" 
+                  alt="Shadow Heist Logo" 
+                  width={150} 
+                  height={150}
+                  className="drop-shadow-[0_0_15px_rgba(139,92,246,0.5)]"
+                />
+              </motion.div>
               <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-600">
                 Shadow Heist
               </h1>
