@@ -1,9 +1,6 @@
 [build]
-  command = "npm run build"
+  command = "echo 'Skipping build step...'"
   publish = "out"
-
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
 
 [build.environment]
   NEXT_PUBLIC_CONVEX_URL = "https://reserved-sailfish-472.convex.cloud"
