@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_Z2VuZXJvdXMtcXVhZ2dhLTI4LmNsZXJrLmFjY291bnRzLmRldiQ"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200 
