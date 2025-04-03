@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
+import AvatarSelector from "@/components/AvatarSelector";
 
 export default function CreateRoom() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function CreateRoom() {
   const [traitorCount, setTraitorCount] = useState(2);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(undefined);
   const { user } = useUser();
 
   const createRoom = useMutation(api.rooms.createRoom);
@@ -43,7 +45,8 @@ export default function CreateRoom() {
         name: roomName,
         hostId: user.id,
         traitorCount,
-        heroCount
+        heroCount,
+        avatarId: selectedAvatarId
       });
       
       // Navigate to the room page
@@ -56,85 +59,100 @@ export default function CreateRoom() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-gray-900 to-black text-white">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500">
-            CREATE A ROOM
-          </h1>
-          <p className="mt-2 text-gray-400">
-            Set up your heist team and invite your friends
-          </p>
-        </div>
+    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
+      <div className="max-w-md mx-auto pt-12">
+        <h1 className="text-4xl font-bold mb-8 text-center">Create a Room</h1>
+        
+        <form onSubmit={handleCreateRoom} className="space-y-6">
+          <div>
+            <label htmlFor="roomName" className="block text-sm font-medium mb-2">
+              Room Name
+            </label>
+            <input
+              id="roomName"
+              type="text"
+              value={roomName}
+              onChange={(e) => setRoomName(e.target.value)}
+              placeholder="Enter a name for your room"
+              className="w-full px-3 py-2 bg-gray-800 rounded border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              required
+            />
+          </div>
 
-        <form onSubmit={handleCreateRoom} className="mt-8 space-y-6">
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="roomName" className="block text-sm font-medium text-gray-300 mb-1">
-                Room Name
-              </label>
-              <input
-                id="roomName"
-                name="roomName"
-                type="text"
-                required
-                className="relative block w-full px-4 py-3 border border-white/10 bg-black/30 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="The Perfect Heist"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Select Your Avatar
+            </label>
+            <div className="flex justify-center mb-4">
+              <AvatarSelector 
+                onSelect={(avatarId) => setSelectedAvatarId(avatarId)} 
+                initialAvatarId={selectedAvatarId}
               />
             </div>
-            
-            <div>
-              <label htmlFor="traitorCount" className="block text-sm font-medium text-gray-300 mb-1">
-                Number of Traitors
-              </label>
-              <div className="flex items-center">
-                <button
-                  type="button"
-                  className="px-3 py-2 bg-black/50 rounded-l-lg border border-white/10 hover:bg-black/70"
-                  onClick={() => setTraitorCount(Math.max(1, traitorCount - 1))}
-                >
-                  -
-                </button>
-                <div className="px-6 py-2 border-t border-b border-white/10 bg-black/30 text-center min-w-[50px]">
-                  {traitorCount}
-                </div>
-                <button
-                  type="button"
-                  className="px-3 py-2 bg-black/50 rounded-r-lg border border-white/10 hover:bg-black/70"
-                  onClick={() => setTraitorCount(Math.min(3, traitorCount + 1))}
-                >
-                  +
-                </button>
-                <span className="ml-3 text-sm text-gray-400">
-                  (Max 3 for 6 players)
-                </span>
+            <p className="text-xs text-center text-gray-400">Click to select or change your avatar</p>
+          </div>
+          
+          <div>
+            <label htmlFor="traitorCount" className="block text-sm font-medium mb-2">
+              Number of Traitors
+            </label>
+            <div className="flex items-center gap-4">
+              <input
+                id="traitorCount"
+                type="range"
+                min="1"
+                max="3"
+                value={traitorCount}
+                onChange={(e) => setTraitorCount(parseInt(e.target.value))}
+                className="flex-1"
+              />
+              <span className="w-8 text-center font-semibold">{traitorCount}</span>
+            </div>
+            <div className="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1</span>
+              <span>2</span>
+              <span>3</span>
+            </div>
+          </div>
+          
+          <div className="pt-4">
+            <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+              <div className="bg-gray-800 rounded p-2">
+                <div className="font-medium text-blue-400">Heroes</div>
+                <div>{6 - traitorCount - 2}</div>
+              </div>
+              <div className="bg-gray-800 rounded p-2">
+                <div className="font-medium text-red-400">Traitors</div>
+                <div>{traitorCount}</div>
+              </div>
+              <div className="bg-gray-800 rounded p-2">
+                <div className="font-medium text-gray-400">Civilians</div>
+                <div>2</div>
+              </div>
+              <div className="bg-gray-800 rounded p-2">
+                <div className="font-medium text-purple-400">Total</div>
+                <div>6</div>
               </div>
             </div>
           </div>
-
+          
           {error && (
-            <div className="text-red-400 text-center text-sm">{error}</div>
+            <div className="p-3 bg-red-900/50 border border-red-900 rounded text-sm text-red-200">
+              {error}
+            </div>
           )}
-
-          <div className="flex flex-col gap-3">
-            <Button
-              type="submit"
-              className="text-lg py-6 w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 border-0 rounded-lg"
-              disabled={isLoading}
-            >
-              {isLoading ? "Creating..." : "Create Room"}
-            </Button>
-            
-            <Link href="/" className="text-center">
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="mt-2 text-sm py-2 px-4 border-white/20 bg-black/30 hover:bg-black/50 text-gray-300 rounded-lg"
-              >
-                Back to Home
-              </Button>
+          
+          <Button
+            type="submit"
+            className="w-full py-6 bg-blue-600 hover:bg-blue-700"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating Room..." : "Create Room"}
+          </Button>
+          
+          <div className="text-center">
+            <Link href="/" className="text-sm text-blue-400 hover:underline">
+              Back to Home
             </Link>
           </div>
         </form>

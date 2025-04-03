@@ -7,12 +7,14 @@ import { Button } from "@/components/ui/button";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
+import AvatarSelector from "@/components/AvatarSelector";
 
 export default function JoinRoom() {
   const router = useRouter();
   const [roomCode, setRoomCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedAvatarId, setSelectedAvatarId] = useState<number | undefined>(undefined);
   const { user } = useUser();
   
   const joinRoom = useMutation(api.rooms.joinRoom);
@@ -37,7 +39,8 @@ export default function JoinRoom() {
       // Call the Convex mutation to join the room
       const result = await joinRoom({
         code: roomCode,
-        userId: user.id
+        userId: user.id,
+        avatarId: selectedAvatarId
       });
       
       // Navigate to the room page
@@ -50,58 +53,59 @@ export default function JoinRoom() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 bg-gradient-to-b from-gray-900 to-black text-white">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-cyan-400">
-            JOIN A ROOM
-          </h1>
-          <p className="mt-2 text-gray-400">
-            Enter the room code to join the heist team
-          </p>
-        </div>
-
-        <form onSubmit={handleJoinRoom} className="mt-8 space-y-6">
-          <div className="rounded-md shadow-sm">
-            <div>
-              <label htmlFor="roomCode" className="sr-only">
-                Room Code
-              </label>
-              <input
-                id="roomCode"
-                name="roomCode"
-                type="text"
-                required
-                className="relative block w-full px-4 py-4 text-lg text-center uppercase tracking-widest border border-white/10 bg-black/30 placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="ENTER CODE"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                maxLength={6}
-              />
-            </div>
+    <main className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white p-4">
+      <div className="max-w-md mx-auto pt-12">
+        <h1 className="text-4xl font-bold mb-8 text-center">Join a Room</h1>
+        
+        <form onSubmit={handleJoinRoom} className="space-y-6">
+          <div>
+            <label htmlFor="roomCode" className="block text-sm font-medium mb-2">
+              Room Code
+            </label>
+            <input
+              id="roomCode"
+              type="text"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              placeholder="Enter 6-digit room code"
+              className="w-full px-3 py-2 bg-gray-800 rounded border border-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              maxLength={6}
+              required
+            />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Select Your Avatar
+            </label>
+            <div className="flex justify-center mb-4">
+              <AvatarSelector 
+                onSelect={(avatarId) => setSelectedAvatarId(avatarId)} 
+                initialAvatarId={selectedAvatarId}
+              />
+            </div>
+            <p className="text-xs text-center text-gray-400">
+              Click to select an avatar. Note: If someone already selected this avatar, you'll get assigned a random one.
+            </p>
+          </div>
+          
           {error && (
-            <div className="text-red-400 text-center text-sm">{error}</div>
+            <div className="p-3 bg-red-900/50 border border-red-900 rounded text-sm text-red-200">
+              {error}
+            </div>
           )}
-
-          <div className="flex flex-col gap-3">
-            <Button
-              type="submit"
-              className="text-lg py-6 w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 border-0 rounded-lg"
-              disabled={isLoading}
-            >
-              {isLoading ? "Joining..." : "Join Game"}
-            </Button>
-            
-            <Link href="/" className="text-center">
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="mt-2 text-sm py-2 px-4 border-white/20 bg-black/30 hover:bg-black/50 text-gray-300 rounded-lg"
-              >
-                Back to Home
-              </Button>
+          
+          <Button
+            type="submit"
+            className="w-full py-6 bg-blue-600 hover:bg-blue-700"
+            disabled={isLoading}
+          >
+            {isLoading ? "Joining Room..." : "Join Room"}
+          </Button>
+          
+          <div className="text-center">
+            <Link href="/" className="text-sm text-blue-400 hover:underline">
+              Back to Home
             </Link>
           </div>
         </form>

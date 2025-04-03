@@ -143,7 +143,13 @@ export default function RoomPage() {
                       player.ready ? "bg-green-900/20 border border-green-500/30" : "bg-black/20 border border-white/10"
                     }`}
                   >
-                    <div className="text-3xl mr-3">👤</div>
+                    <div className="h-12 w-12 mr-3 overflow-hidden rounded-full border border-white/20">
+                      <img 
+                        src={player.avatarId ? `/Avatars/Avatar (${player.avatarId}).png` : "/placeholder-avatar.png"} 
+                        alt="Player avatar" 
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                     <div>
                       <div className="font-semibold">{player.userId === user?.id ? 'You' : `Player ${player._id.substring(0, 4)}`}</div>
                       <div className="text-sm">

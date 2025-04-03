@@ -28,6 +28,7 @@ export type PlayerModel = {
   isHost: boolean;
   alignment?: "hero" | "traitor" | "neutral";
   isAlive: boolean;
+  avatarId?: number;
 };
 
 export type TaskModel = {

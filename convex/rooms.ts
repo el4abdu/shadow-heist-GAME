@@ -18,6 +18,7 @@ export const createRoom = mutation({
     hostId: v.string(),
     traitorCount: v.number(),
     heroCount: v.number(),
+    avatarId: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     // Generate a unique room code
@@ -37,6 +38,9 @@ export const createRoom = mutation({
       createdAt: Date.now(),
     });
     
+    // Assign a random avatar if none selected
+    const avatarId = args.avatarId ?? Math.floor(Math.random() * 18) + 1;
+    
     // Add the host as a player
     await ctx.db.insert("players", {
       userId: args.hostId,
@@ -44,6 +48,7 @@ export const createRoom = mutation({
       ready: false,
       isHost: true,
       isAlive: true,
+      avatarId,
     });
     
     return { roomId, code };
@@ -54,6 +59,7 @@ export const joinRoom = mutation({
   args: {
     code: v.string(),
     userId: v.string(),
+    avatarId: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     // In a real implementation with proper schema setup, you would use:
@@ -65,6 +71,28 @@ export const joinRoom = mutation({
     // For demo, we'll assume we have the roomId
     const roomId = "demo_room_id";
     
+    // Get currently used avatars in the room
+    const existingPlayers = await ctx.db
+      .query("players")
+      .withIndex("by_room", (q) => q.eq("roomId", roomId as any))
+      .collect();
+    
+    const usedAvatarIds = existingPlayers.map(player => player.avatarId).filter(id => id !== undefined);
+    
+    // If user selected an avatar, check if it's available
+    let avatarId = args.avatarId;
+    
+    // If avatar is already used or not selected, assign a random available one
+    if (!avatarId || usedAvatarIds.includes(avatarId)) {
+      // Get all available avatars (1-18)
+      const allAvatarIds = Array.from({ length: 18 }, (_, i) => i + 1);
+      const availableAvatarIds = allAvatarIds.filter(id => !usedAvatarIds.includes(id));
+      
+      // Select a random available avatar
+      const randomIndex = Math.floor(Math.random() * availableAvatarIds.length);
+      avatarId = availableAvatarIds[randomIndex];
+    }
+    
     // Add player to the room
     await ctx.db.insert("players", {
       userId: args.userId,
@@ -72,6 +100,7 @@ export const joinRoom = mutation({
       ready: false,
       isHost: false,
       isAlive: true,
+      avatarId,
     });
     
     return { roomId };
